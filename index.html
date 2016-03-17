@@ -1,0 +1,245 @@
+<html>
+<head>
+	<script src="https://cdn.firebase.com/js/client/2.4.1/firebase.js"></script>
+	<script src="paper-full.js"></script>
+	<style>
+		body{
+			width:1600px;
+		}
+		canvas{
+			border:1px solid #999;
+		}
+		body > div{
+			display:inline-block;
+			vertical-align:top;
+		}
+		path{
+			stroke:#000;
+			stroke-width:5px;
+			fill:none;
+
+		}
+		table{
+			border:0px solid #999;
+			font-size:10px;
+		}
+		td{
+			width:20px;
+			height:20px;
+		}
+		svg{
+			vertical-align:top;
+			height:20px;
+		}
+	</style>
+</head>
+<body>
+	<div>
+		<button onclick="undo()">undo</button>
+		<button onclick="redo()">redo</button>
+		<button onclick="clr()">clear</button>
+		<br><br>
+		<canvas id="myCanvas" width="225" height="200"></canvas>
+		<br><br>
+		letters (e.g., "a,b"): <input type="text" id="letters"/>
+		<br><br>
+		(please list in alphabetical order)
+		<br><br>
+		<button onclick="submit()">submit</button>
+		<br><br>
+	</div>
+	<div>
+		<table id="table1"></table>
+		<table id="table3"></table>
+		<table id="table2"></table>
+	</div>
+	<!--<svg id="svg">
+		<path stroke="#000" stroke-width="5px" stroke-linecap="round" id="path" fill="none"/>
+	</svg>-->
+	<script>
+		var ref = new Firebase("https://perception.firebaseio.com/");
+
+		/*
+		
+		TODO
+		- test drawing svg based off combined paths
+		- submission to firebase
+		- recieve data from firebase
+		- draw grid of completed paths, update on change
+
+		- begin creating actual application
+			- for now we need to just mix and match single letters, later we need an algorithm to find all possible combinations (choose one for now)
+
+		*/
+
+		var canvas = document.getElementById('myCanvas');
+
+		var letters = document.querySelector('#letters');
+		var svg = document.querySelector('#svg');
+
+		var table1 = document.querySelector('#table1');
+		var table2 = document.querySelector('#table2');
+		var table2 = document.querySelector('#table3');
+
+		//canvas.width =
+		// Create an empty project and a view for the canvas:
+		paper.setup(canvas);
+		// Create a Paper.js Path to draw a line into it:
+		
+		/*var rect = new paper.Path.Rectangle([-1, -1], [150, 402]);
+		var rect2 = new paper.Path.Rectangle([251, -1], [150, 402]);
+		rect.fillColor="#eee"
+		rect.strokeColor="#999"
+		rect2.fillColor="#eee"
+		rect2.strokeColor="#999"*/
+		var line = new paper.Path.Line([0,75],[302,75])
+		line.strokeColor="#999"
+		line.dashArray = [10,10]
+		var line = new paper.Path.Line([0,125],[302,125])
+		line.strokeColor="#999"
+
+		var line = new paper.Path.Rectangle([-1,-1],[304,26])
+		line.strokeColor="#999"
+		line.fillColor="#eee"
+		var line = new paper.Path.Rectangle([-1,177],[304,26])
+		line.strokeColor="#999"
+		line.fillColor="#eee"
+
+		var line = new paper.Path.Rectangle([75,25],[75,152])
+		line.strokeColor="#f00"
+		
+		paper.view.update();
+
+		var paths = []
+		var undos = []
+
+		var alphabet = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
+
+		var mousedown = false;
+
+		function onMouseDown(event) {
+			mousedown = true;
+
+			// Create a new path and set its stroke color to black:
+			paths.push(new paper.Path({
+				segments: [[event.clientX - canvas.offsetLeft + document.body.scrollLeft, event.clientY - canvas.offsetTop + document.body.scrollTop]],
+				strokeColor: 'black',
+				strokeWidth: 3
+			}));
+
+			undos = []
+		}
+
+		// While the user drags the mouse, points are added to the path
+		// at the position of the mouse:
+		function onMouseMove(event) {
+			if (mousedown) {
+				paths[paths.length-1].add([event.clientX - canvas.offsetLeft + document.body.scrollLeft, event.clientY - canvas.offsetTop + document.body.scrollTop]);
+			}
+		}
+
+		// When the mouse is released, we simplify the path:
+		function onMouseUp(event) {
+			if (mousedown) {
+				mousedown = false;
+
+				var segmentCount = paths[paths.length-1].segments.length;
+
+				// When the mouse is released, simplify it:
+				paths[paths.length-1].simplify(10);
+			}
+		}
+
+		function undo(){
+			if(paths.length > 0){
+				paths[paths.length-1].remove()
+				undos.push(paths[paths.length-1])
+				paths.pop()
+			}
+			paper.view.update()
+		}
+
+		function redo(){
+			if(undos.length > 0){
+				paths.push(new paper.Path({
+					segments: undos[undos.length-1].getSegments(),
+					strokeColor: 'black',
+					strokeWidth: 3
+				}));
+				undos.pop()
+				paper.view.update()
+			}
+		}
+
+		function clr(){
+			paths.forEach(function(p){
+				p.remove()
+			})
+			paths = []
+			undos = []
+			paper.view.update()
+		}
+
+		function createTd(){
+			var td = document.createElement('td');
+			var svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+			svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
+			svg.setAttribute('viewBox', '75 25 75 150')
+			var path = document.createElementNS("http://www.w3.org/2000/svg","path");
+			svg.appendChild(path);
+			td.appendChild(svg);
+			return td
+		}
+
+		for(var r = 0; r < 2; r++){
+			var tr = document.createElement('tr');
+			for(var c = 0; c < 26; c++){
+				tr.appendChild(createTd())
+			}
+			table1.appendChild(tr)
+		}
+
+		var tr = document.createElement('tr');
+		for(var c = 0; c < 53; c++){
+			var td = document.createElement('td');
+			td.textContent = (' '+alphabet)[c]
+			tr.appendChild(td)
+		}
+		table3.appendChild(tr)
+
+		for(var r = 0; r < 52; r++){
+			var tr = document.createElement('tr');
+			tr.textContent = alphabet[r]
+			for(var c = 0; c < 52; c++){
+				tr.appendChild(createTd(r,c))
+			}
+			table2.appendChild(tr)
+		}
+
+		ref.child('data').on('child_added', function(snapshot){
+			var k = snapshot.key().split(',').sort()
+			if (k.length == 1) {
+				table1.children[(k[0].toUpperCase() == k[0])+0].children[alphabet.indexOf(k[0].toLowerCase())].querySelector('svg path').setAttribute('d', snapshot.val())
+
+				console.log(table1.children[(k[0].toUpperCase() == k[0])+0].children[alphabet.indexOf(k[0].toLowerCase())].querySelector('svg path'))
+			} else if (k.length == 2) {
+				table2.children[alphabet.indexOf(k[0])].children[alphabet.indexOf(k[1])].querySelector('svg path').setAttribute('d', snapshot.val())
+			}
+		})
+
+		function submit(){
+			combpath = paths.map(function(p){return p.getPathData()}).join('')
+
+			ref.child('data/'+letters.value).set(combpath)
+
+			letters.value = ''
+
+			clr()
+		}
+
+		canvas.addEventListener('mousedown', onMouseDown)
+		window.addEventListener('mousemove', onMouseMove)
+		window.addEventListener('mouseup', onMouseUp)
+	</script>
+</body>
+</html>
