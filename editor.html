@@ -31,11 +31,19 @@
 			height:20px;
 		}
 		#table2 td{
-			background:#eee;
+			background:#f88;
+		}
+		#table2 td.done{
+			background:#8f8;
 		}
 		#table1 td:hover, #table2 td:hover{
 			background:#5bf;
-			outline:1px solid #09e;
+			outline:2px solid #09e;
+		}
+		#table2 td.dead{
+			background:#eee;
+			outline:none;
+			/*outline:1px solid #f00;*/
 		}
 		svg{
 			vertical-align:top;
@@ -75,13 +83,10 @@
 		/*
 		
 		TODO
-		- test drawing svg based off combined paths
-		- submission to firebase
-		- recieve data from firebase
-		- draw grid of completed paths, update on change
-
-		- begin creating actual application
-			- for now we need to just mix and match single letters, later we need an algorithm to find all possible combinations (choose one for now)
+		- implement flagging in editor
+		- visualize others than just singles
+		- analyze most common combinations needed
+		- create algorithm that is better
 
 		*/
 
@@ -193,9 +198,13 @@
 			paper.view.update()
 		}
 
-		function createTd(title){
+		function createTd(title,r,c){
 			var td = document.createElement('td');
-			td.setAttribute('title', title)
+			if(r != undefined && r + 1 > c){
+				td.classList.add('dead')
+			}else{
+				td.setAttribute('title', title)
+			}
 			var svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
 			svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
 			svg.setAttribute('viewBox', '75 25 75 150')
@@ -217,7 +226,7 @@
 			var tr = document.createElement('tr');
 			tr.textContent = alphabet[r]
 			for(var c = 0; c < 52; c++){
-				tr.appendChild(createTd(alphabet[r]+', '+alphabet[c]))
+				tr.appendChild(createTd(alphabet[r]+', '+alphabet[c], r, c))
 			}
 			table2.appendChild(tr)
 		}
@@ -232,13 +241,15 @@
 
 		ref.child('data').on('child_added', function(snapshot){
 			var k = snapshot.key().split(',').sort()
+			var td;
 			if (k.length == 1) {
-				table1.children[(k[0].toUpperCase() == k[0])+0].children[alphabet.indexOf(k[0].toLowerCase())].querySelector('svg path').setAttribute('d', snapshot.val())
-
-				console.log(table1.children[(k[0].toUpperCase() == k[0])+0].children[alphabet.indexOf(k[0].toLowerCase())].querySelector('svg path'))
+				td = table1.children[(k[0].toUpperCase() == k[0])+0].children[alphabet.indexOf(k[0].toLowerCase())]
 			} else if (k.length == 2) {
-				table2.children[alphabet.indexOf(k[0])].children[alphabet.indexOf(k[1])].querySelector('svg path').setAttribute('d', snapshot.val())
+				td = table2.children[alphabet.indexOf(k[0])].children[alphabet.indexOf(k[1])]
+
 			}
+			td.classList.add('done')
+			td.querySelector('svg path').setAttribute('d', snapshot.val())
 		})
 
 		function submit(){

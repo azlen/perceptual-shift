@@ -24,12 +24,20 @@
 		var input1 = document.querySelector('#input1')
 		var input2 = document.querySelector('#input2')
 
-		var letterpadding = 5
+		var letterpadding = 10
 
 		function generate(){
 			output.innerHTML = '';
 			for(var i = 0; i < input1.value.length; i++){
-				ref.child('data/'+[input1.value[i], input2.value[i]].sort().join(',')).once('value', function(snapshot){
+				var i1 = input1.value[i]
+				var i2 = input2.value[i]
+				var inp;
+				if(i1 == i2){
+					inp = i1
+				}else{
+					inp = [i1, i2].sort().join(',')
+				}
+				ref.child('data/'+inp).once('value', function(snapshot){
 					console.log(snapshot.val())
 					var svg = document.createElementNS("http://www.w3.org/2000/svg", "svg")
 					svg.setAttribute('height', '150px')
@@ -39,7 +47,7 @@
 					output.appendChild(svg)
 
 					var bbox = path.getBBox()
-					svg.setAttribute('viewBox', bbox.x+' 25 '+(bbox.width + letterpadding)+' 150')
+					svg.setAttribute('viewBox', (bbox.x - letterpadding/2)+' 25 '+(bbox.width + letterpadding)+' 150')
 					svg.setAttribute('width', bbox.width)
 				})
 			}
