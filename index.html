@@ -79,7 +79,7 @@
 
 		var table1 = document.querySelector('#table1');
 		var table2 = document.querySelector('#table2');
-		var table2 = document.querySelector('#table3');
+		var table3 = document.querySelector('#table3');
 
 		//canvas.width =
 		// Create an empty project and a view for the canvas:
@@ -199,14 +199,6 @@
 			table1.appendChild(tr)
 		}
 
-		var tr = document.createElement('tr');
-		for(var c = 0; c < 53; c++){
-			var td = document.createElement('td');
-			td.textContent = (' '+alphabet)[c]
-			tr.appendChild(td)
-		}
-		table3.appendChild(tr)
-
 		for(var r = 0; r < 52; r++){
 			var tr = document.createElement('tr');
 			tr.textContent = alphabet[r]
@@ -215,6 +207,14 @@
 			}
 			table2.appendChild(tr)
 		}
+
+		var tr = document.createElement('tr');
+		for(var c = 0; c < 53; c++){
+			var td = document.createElement('td');
+			td.textContent = (' '+alphabet)[c]
+			tr.appendChild(td)
+		}
+		table3.appendChild(tr)
 
 		ref.child('data').on('child_added', function(snapshot){
 			var k = snapshot.key().split(',').sort()
@@ -228,13 +228,15 @@
 		})
 
 		function submit(){
-			combpath = paths.map(function(p){return p.getPathData()}).join('')
+			if (letters.value != '') {
+				combpath = paths.map(function(p){return p.getPathData()}).join('')
 
-			ref.child('data/'+letters.value).set(combpath)
+				ref.child('data/'+letters.value).set(combpath)
 
-			letters.value = ''
+				letters.value = ''
 
-			clr()
+				clr()
+			}
 		}
 
 		canvas.addEventListener('mousedown', onMouseDown)
