@@ -29,14 +29,16 @@
 		function generate(){
 			output.innerHTML = '';
 			for(var i = 0; i < input1.value.length; i++){
-				var i1 = input1.value[i]
-				var i2 = input2.value[i]
+				var i1 = input1.value[i].replace(',','comma')
+				var i2 = input2.value[i].replace(',','comma')
 				var inp;
 				if(i1 == i2){
 					inp = i1
 				}else{
 					inp = [i1, i2].sort().join(',')
 				}
+				inp = inp.replace(/\./g,'period').replace(/\#/g,'octothorpe').replace(/\$/g,'dollarsign').replace(/\[/g,'leftsquarebracket').replace(/\]/g,'rightsquarebracket');
+				
 				ref.child('data/'+inp).once('value', function(snapshot){
 					console.log(snapshot.val())
 					var svg = document.createElementNS("http://www.w3.org/2000/svg", "svg")
@@ -48,7 +50,7 @@
 
 					var bbox = path.getBBox()
 					svg.setAttribute('viewBox', (bbox.x - letterpadding/2)+' 25 '+(bbox.width + letterpadding)+' 150')
-					svg.setAttribute('width', bbox.width)
+					svg.setAttribute('width', bbox.width+letterpadding)
 				})
 			}
 		}
