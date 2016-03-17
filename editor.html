@@ -30,6 +30,13 @@
 			width:20px;
 			height:20px;
 		}
+		#table2 td{
+			background:#eee;
+		}
+		#table1 td:hover, #table2 td:hover{
+			background:#5bf;
+			outline:1px solid #09e;
+		}
 		svg{
 			vertical-align:top;
 			height:20px;
@@ -186,8 +193,9 @@
 			paper.view.update()
 		}
 
-		function createTd(){
+		function createTd(title){
 			var td = document.createElement('td');
+			td.setAttribute('title', title)
 			var svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
 			svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
 			svg.setAttribute('viewBox', '75 25 75 150')
@@ -200,7 +208,7 @@
 		for(var r = 0; r < 2; r++){
 			var tr = document.createElement('tr');
 			for(var c = 0; c < 26; c++){
-				tr.appendChild(createTd())
+				tr.appendChild(createTd(alphabet[r*26+c]))
 			}
 			table1.appendChild(tr)
 		}
@@ -209,7 +217,7 @@
 			var tr = document.createElement('tr');
 			tr.textContent = alphabet[r]
 			for(var c = 0; c < 52; c++){
-				tr.appendChild(createTd(r,c))
+				tr.appendChild(createTd(alphabet[r]+', '+alphabet[c]))
 			}
 			table2.appendChild(tr)
 		}
