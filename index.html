@@ -1,0 +1,46 @@
+<html>
+<head>
+	<script src="https://cdn.firebase.com/js/client/2.4.1/firebase.js"></script>
+	<style>
+		path{
+			fill:none;
+			stroke:#000;
+			stroke-width:3px;
+			stroke-linecap:round;
+		}
+	</style>
+</head>
+<body>
+	first: <input id="input1"/>
+	<br>
+	second: <input id="input2"/>
+	<br><br>
+	<button onclick="generate()">generate</button>
+	<div id="output"></div>
+	<script>
+		var ref = new Firebase("https://perception.firebaseio.com/");
+
+		var output = document.querySelector('#output')
+		var input1 = document.querySelector('#input1')
+		var input2 = document.querySelector('#input2')
+
+
+		function generate(){
+			output.innerHTML = '';
+			for(var i = 0; i < input1.value.length; i++){
+				ref.child('data/'+[input1.value[i], input2.value[i]].sort().join(',')).once('value', function(snapshot){
+					console.log(snapshot.val())
+					var svg = document.createElementNS("http://www.w3.org/2000/svg", "svg")
+					svg.setAttribute('viewBox', '75 25 75 150')
+					svg.setAttribute('width', '75px')
+					svg.setAttribute('height', '150px')
+					var path = document.createElementNS("http://www.w3.org/2000/svg","path");
+					path.setAttribute('d', snapshot.val())
+					svg.appendChild(path)
+					output.appendChild(svg)
+				})
+			}
+		}
+	</script>
+</body>
+</html>
