@@ -92,6 +92,7 @@
 			<li>Now displays letters other than just single letters and combinations of single letters. You can now see additions like "ls,u"</li>
 			<li>Check frequency of letter + double letter pairs <a href="http://azlen.github.io/perceptual-shift/frequency.html">here</a> (start with the ones with a higher number).<br><i>PS: probably innaccurate, there are definitely bugs in the algorithm, but it's fine for now</i></li>
 			<li>Updates automatically when letters are changed (previously only updated letters added for the first time)</li>
+			<li>Now warns you if you are replacing a letter (unless the letter has been flagged)</li>
 			<li>I've been downloading backups from the server so that if something goes wrong on the server, we cannot lose everything :D</li>
 		</ul>
 	</div>
@@ -253,9 +254,6 @@
 			document.querySelector('*[title="'+snapshot.key()+'"]').classList.toggle('flagged')
 		}
 
-		ref.child('flags').on('child_added', updateFlag)
-		ref.child('flags').on('child_removed', updateFlag)
-
 		for(var r = 0; r < 2; r++){
 			var tr = document.createElement('tr');
 			for(var c = 0; c < 26; c++){
@@ -307,13 +305,24 @@
 			if (letters.value != '') {
 				combpath = paths.map(function(p){return p.getPathData()}).join('')
 
-				ref.child('data/'+letters.value.split(',').sort(function(a,b){return alphabet.indexOf(a[0]) > alphabet.indexOf(b[0])}).join(',')).set(combpath)
+				var key = letters.value.split(',').sort(function(a,b){return alphabet.indexOf(a[0]) > alphabet.indexOf(b[0])}).join(',')
+				var el = document.querySelector('*[title="'+key.split(',').join(', ')+'"]')
+				if(el && el.classList.contains('done') && !el.classList.contains('flagged')){
+					if(!confirm('Are you sure you want to replace the current "'+key+'"?')){
+						return
+					}
+				}
+				el.classList.remove('flagged')
+				ref.child('data/'+key).set(combpath)
 
 				letters.value = ''
 
 				clr()
 			}
 		}
+
+		ref.child('flags').on('child_added', updateFlag)
+		ref.child('flags').on('child_removed', updateFlag)
 
 		canvas.addEventListener('mousedown', onMouseDown)
 		window.addEventListener('mousemove', onMouseMove)
