@@ -13,6 +13,9 @@
 			display:inline-block;
 			vertical-align:top;
 		}
+		body > div:first-child{
+			width:260px;
+		}
 		path{
 			stroke:#000;
 			stroke-width:5px;
@@ -23,22 +26,37 @@
 			border:0px solid #999;
 			font-size:10px;
 		}
+		td{
+			min-width:20px;
+			min-height:20px;
+			cursor:pointer;
+		}
+		#table4{
+			width:900px;
+		}
+		#table4 td{
+			display:inline-block;
+			margin:1px;
+		}
 		#table3{
 			padding-left:14px;
 		}
-		td{
-			width:20px;
-			height:20px;
+		#table3 td{
+			cursor:default !important;
 		}
 		#table2 td{
 			background:#f88;
 		}
-		#table2 td.done{
+		#table2 td.done, #table4 td{
 			background:#8f8;
 		}
-		#table1 td:hover, #table2 td:hover{
+		#table1 td:hover, #table2 td:hover, #table4 td:hover{
 			background:#5bf;
 			outline:2px solid #09e;
+		}
+		td.flagged{
+			background:#f90 !important;
+			outline:1px solid #c70
 		}
 		#table2 td.dead{
 			background:#eee;
@@ -62,16 +80,24 @@
 		<br><br>
 		letters (e.g., "a,b"): <input type="text" id="letters"/>
 		<br><br>
-		(please list in alphabetical order)
-		<br>
 		(case sensitive)
 		<br><br>
 		<button onclick="submit()">submit</button>
 		<br><br>
-		(feel free to replace green ones if you think you<br> have something that looks better. I <br>will try to implement flagging soon<br> so that we can flag which ones <br>can be replaced and which ones shouldn't)
+		NEW (big update)
+		<ul>
+			<li><a href="http://azlen.github.io/perceptual-shift/?True,False">This</a>, I love it (+ you can now link to a specific word combination :D)</li>
+			<li>Multiple bugfixes</li>
+			<li>Flagging letters, click on a letter to flag it (flagged letters become orange). Flag letters that should be replaced.</li>
+			<li>Now displays letters other than just single letters and combinations of single letters. You can now see additions like "ls,u"</li>
+			<li>Check frequency of letter + double letter pairs <a href="http://azlen.github.io/perceptual-shift/frequency.html">here</a> (start with the ones with a higher number).<br><i>PS: probably innaccurate, there are definitely bugs in the algorithm, but it's fine for now</i></li>
+			<li>Updates automatically when letters are changed (previously only updated letters added for the first time)</li>
+			<li>I've been downloading backups from the server so that if something goes wrong on the server, we cannot lose everything :D</li>
+		</ul>
 	</div>
 	<div>
 		<table id="table1"></table>
+		<table id="table4"><span></span></table>
 		<table id="table3"></table>
 		<table id="table2"></table>
 	</div>
@@ -99,6 +125,7 @@
 		var table1 = document.querySelector('#table1');
 		var table2 = document.querySelector('#table2');
 		var table3 = document.querySelector('#table3');
+		var table4 = document.querySelector('#table4');
 
 		//canvas.width =
 		// Create an empty project and a view for the canvas:
@@ -205,6 +232,13 @@
 				td.classList.add('dead')
 			}else{
 				td.setAttribute('title', title)
+				td.addEventListener('click', function(){
+					if (td.classList.contains('flagged')) {
+						ref.child('flags/'+title).remove()
+					} else {
+						ref.child('flags/'+title).set(1)
+					}
+				})
 			}
 			var svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
 			svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
@@ -214,6 +248,13 @@
 			td.appendChild(svg);
 			return td
 		}
+
+		function updateFlag(snapshot){
+			document.querySelector('*[title="'+snapshot.key()+'"]').classList.toggle('flagged')
+		}
+
+		ref.child('flags').on('child_added', updateFlag)
+		ref.child('flags').on('child_removed', updateFlag)
 
 		for(var r = 0; r < 2; r++){
 			var tr = document.createElement('tr');
@@ -241,24 +282,32 @@
 		table3.appendChild(tr)
 
 		ref.child('data').on('child_added', function(snapshot){
-			var k = snapshot.key().split(',').sort()
+			var k = snapshot.key().split(',').sort(function(a,b){return alphabet.indexOf(a[0]) > alphabet.indexOf(b[0])})
 			var td;
 			if (k.length == 1) {
 				td = table1.children[(k[0].toUpperCase() == k[0])+0].children[alphabet.indexOf(k[0].toLowerCase())]
-			} else if (k.length == 2) {
+			} else if (k.join('').length == 2 && k.length == 2) {
 				td = table2.children[alphabet.indexOf(k[0])].children[alphabet.indexOf(k[1])]
 			}else{
-				return
+				td = createTd(k.join(', '))
+				table4.insertBefore(td, table4.children[0])
 			}
 			td.classList.add('done')
 			td.querySelector('svg path').setAttribute('d', snapshot.val())
+		})
+
+		ref.child('data').on('child_changed', function(snapshot){
+			console.log(snapshot.key())
+			var k = snapshot.key().split(',').sort(function(a,b){return alphabet.indexOf(a[0]) > alphabet.indexOf(b[0])}).join(', ')
+			console.log(k)
+			document.querySelector('*[title="'+k+'"]').querySelector('svg path').setAttribute('d', snapshot.val())
 		})
 
 		function submit(){
 			if (letters.value != '') {
 				combpath = paths.map(function(p){return p.getPathData()}).join('')
 
-				ref.child('data/'+letters.value).set(combpath)
+				ref.child('data/'+letters.value.split(',').sort(function(a,b){return alphabet.indexOf(a[0]) > alphabet.indexOf(b[0])}).join(',')).set(combpath)
 
 				letters.value = ''
 

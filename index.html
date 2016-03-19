@@ -24,38 +24,70 @@
 		var input1 = document.querySelector('#input1')
 		var input2 = document.querySelector('#input2')
 
+		if(window.location.search != ''){
+			l = window.location.search.slice(1, window.location.search.length)
+			l = l.split(',')
+			input1.value = l[0]
+			input2.value = l[1]
+		}
+
 		var letterpadding = 10
 
+		function generatecb(){
+			//window.location.search = '?'+input1.value+','+input2.value
+		}
+
+		var data = {}
+
+		ref.child('data').once('value', function(snapshot){
+			data = snapshot.val()
+			generate()
+		})
+		ref.child('data').on('child_added', function(snapshot){
+			data[snapshot.key()] = snapshot.val()
+		})
+		ref.child('data').on('child_changed', function(snapshot){
+			data[snapshot.key()] = snapshot.val()
+		})
+
+		var alphabet = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
+
+		function sort(arr){
+			return arr.sort(function(a,b){return alphabet.indexOf(a[0]) > alphabet.indexOf(b[0])}).join(',')
+		}
+
 		function generate(){
+			window.history.replaceState({}, null, window.location.origin + window.location.pathname + '?' + input1.value + ',' + input2.value)
 			output.innerHTML = '';
-			for(var i = 0; i < input1.value.length; i++){
-				var i1 = input1.value[i].replace(',','comma')
-				var i2 = input2.value[i].replace(',','comma')
+			var short = [input1.value, input2.value][(input1.value.length > input2.value.length)+0]
+			var long = [input1.value, input2.value][(short != input2.value)+0]
+			var dist = long.length - short.length
+			for(var i = 0; i < short.length; i++){
+				var li = i + long.length - short.length - dist
+				var i1 = short[i]//.replace(',','comma')
+				var i2 = long[li]//.replace(',','comma')
+				if(dist > 0 && data.hasOwnProperty(sort([i1, i2 + long[li + 1]]))){
+					i2 += long[li + 1]
+					dist -= 1
+				}
 				var inp;
 				if(i1 == i2){
 					inp = i1
 				}else{
-					inp = [i1, i2].sort().join(',')
+					inp = sort([i1,i2])
 				}
-				inp = inp.replace(/\./g,'period').replace(/\#/g,'octothorpe').replace(/\$/g,'dollarsign').replace(/\[/g,'leftsquarebracket').replace(/\]/g,'rightsquarebracket');
-				
-				ref.child('data/'+inp).once('value', function(snapshot){
-					console.log(snapshot.val())
-					var svg = document.createElementNS("http://www.w3.org/2000/svg", "svg")
-					svg.setAttribute('height', '150px')
-					var path = document.createElementNS("http://www.w3.org/2000/svg","path");
-					path.setAttribute('d', snapshot.val())
-					svg.appendChild(path)
-					output.appendChild(svg)
-
-					var bbox = path.getBBox()
-					svg.setAttribute('viewBox', (bbox.x - letterpadding/2)+' 25 '+(bbox.width + letterpadding)+' 150')
-					svg.setAttribute('width', bbox.width+letterpadding)
-				})
+				//inp = inp.replace(/\./g,'period').replace(/\#/g,'octothorpe').replace(/\$/g,'dollarsign').replace(/\[/g,'leftsquarebracket').replace(/\]/g,'rightsquarebracket');
+				var svg = document.createElementNS("http://www.w3.org/2000/svg", "svg")
+				svg.setAttribute('height', '150px')
+				var path = document.createElementNS("http://www.w3.org/2000/svg","path");
+				svg.appendChild(path)
+				output.appendChild(svg)
+				path.setAttribute('d', data[inp])
+				var bbox = path.getBBox()
+				svg.setAttribute('viewBox', (bbox.x - letterpadding/2)+' 25 '+(bbox.width + letterpadding)+' 150')
+				svg.setAttribute('width', bbox.width+letterpadding)
 			}
 		}
-
-		generate()
 	</script>
 </body>
 </html>
