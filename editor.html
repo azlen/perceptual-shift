@@ -85,6 +85,13 @@
 		<br><br>
 		<button onclick="submit()">submit</button>
 		<br><br>
+		Done (table): <span id="donecounter"></span>
+		<br>
+		Left (table): <span id="leftcounter"></span>
+		<br><br>
+		Base letters: 52<br>
+		Done (other): <span id="othercounter"></span>
+		<br><br>
 		NEW (big update)
 		<ul>
 			<li><a href="http://azlen.github.io/perceptual-shift/?True,False">This</a>, I love it (+ you can now link to a specific word combination :D)</li>
@@ -128,6 +135,10 @@
 		var table2 = document.querySelector('#table2');
 		var table3 = document.querySelector('#table3');
 		var table4 = document.querySelector('#table4');
+
+		var donecounter = document.querySelector('#donecounter');
+		var leftcounter = document.querySelector('#leftcounter');
+		var othercounter = document.querySelector('#othercounter');
 
 		//canvas.width =
 		// Create an empty project and a view for the canvas:
@@ -293,6 +304,10 @@
 			}
 			td.classList.add('done')
 			td.querySelector('svg path').setAttribute('d', snapshot.val())
+
+			donecounter.textContent = table2.querySelectorAll('td.done').length;
+			leftcounter.textContent = table2.querySelectorAll('td:not(.done):not(.dead)').length;
+			othercounter.textContent = table4.querySelectorAll('td.done').length;
 		})
 
 		ref.child('data').on('child_changed', function(snapshot){
