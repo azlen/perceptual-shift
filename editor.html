@@ -306,13 +306,14 @@
 				combpath = paths.map(function(p){return p.getPathData()}).join('')
 
 				var key = letters.value.split(',').sort(function(a,b){return alphabet.indexOf(a[0]) > alphabet.indexOf(b[0])}).join(',')
-				var el = document.querySelector('*[title="'+key.split(',').join(', ')+'"]')
+				var key2 = key.split(',').join(', ')
+				var el = document.querySelector('*[title="'+key2+'"]')
 				if(el && el.classList.contains('done') && !el.classList.contains('flagged')){
 					if(!confirm('Are you sure you want to replace the current "'+key+'"?')){
 						return
 					}
 				}
-				el.classList.remove('flagged')
+				ref.child('flags/'+key2).remove()
 				ref.child('data/'+key).set(combpath)
 
 				letters.value = ''
