@@ -27,15 +27,17 @@
 			border:0px solid #999;
 			font-size:10px;
 		}
-		td{
+		td, #table4 span{
 			min-width:20px;
 			min-height:20px;
 			cursor:pointer;
 		}
 		#table4{
-			width:900px;
+			display:block;
+			max-width:1000px;
+			white-space:wrap;
 		}
-		#table4 td{
+		#table4 span{
 			display:inline-block;
 			margin:1px;
 		}
@@ -48,14 +50,14 @@
 		#table2 td{
 			background:#f88;
 		}
-		#table2 td.done, #table4 td{
+		#table2 td.done, #table4 span{
 			background:#8f8;
 		}
-		#table1 td:hover, #table2 td:hover, #table4 td:hover{
+		#table1 td:hover, #table2 td:hover, #table4 span:hover{
 			background:#5bf;
 			outline:2px solid #09e;
 		}
-		td.flagged{
+		.flagged{
 			background:#f90 !important;
 			outline:1px solid #c70
 		}
@@ -107,7 +109,7 @@
 	</div>
 	<div>
 		<table id="table1"></table>
-		<table id="table4"><span></span></table>
+		<div id="table4"><div></div></div><br>
 		<table id="table3"></table>
 		<table id="table2"></table>
 	</div>
@@ -241,8 +243,8 @@
 		}
 
 		function createTd(title,r,c){
-			var td = document.createElement('td');
-			if(r != undefined && r + 1 > c){
+			var td = document.createElement(r=='span'?r:'td');
+			if(r!= 'span' && r != undefined && r + 1 > c){
 				td.classList.add('dead')
 			}else{
 				td.setAttribute('title', title)
@@ -300,15 +302,15 @@
 			} else if (k.join('').length == 2 && k.length == 2) {
 				td = table2.children[alphabet.indexOf(k[0])].children[alphabet.indexOf(k[1])]
 			}else{
-				td = createTd(k.join(', '))
+				td = createTd(k.join(', '),'span')
 				table4.insertBefore(td, table4.children[0])
 			}
 			td.classList.add('done')
-			td.querySelector('svg path').setAttribute('d', snapshot.val())
+				td.querySelector('svg path').setAttribute('d', snapshot.val())
 
-			donecounter.textContent = table2.querySelectorAll('td.done').length;
-			leftcounter.textContent = table2.querySelectorAll('td:not(.done):not(.dead)').length;
-			othercounter.textContent = table4.querySelectorAll('td.done').length;
+				donecounter.textContent = table2.querySelectorAll('td.done').length;
+				leftcounter.textContent = table2.querySelectorAll('td:not(.done):not(.dead)').length;
+				othercounter.textContent = table4.querySelectorAll('span.done').length;
 		})
 
 		ref.child('data').on('child_changed', function(snapshot){
