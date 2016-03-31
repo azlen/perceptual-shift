@@ -66,6 +66,12 @@
 			outline:none;
 			/*outline:1px solid #f00;*/
 		}
+
+		.gold{
+			background:#ee3 !important;
+			outline:1px solid #bb0
+		}
+
 		svg{
 			vertical-align:top;
 			height:20px;
@@ -94,17 +100,9 @@
 		Base letters: 52<br>
 		Done (other): <span id="othercounter"></span>
 		<br><br>
-		NEW (big update)
+		NEW (gold update)
 		<ul>
-			<li><a href="http://azlen.github.io/perceptual-shift/?True,False">This</a>, I love it (+ you can now link to a specific word combination :D)</li>
-			<li>Multiple bugfixes</li>
-			<li>Flagging letters, click on a letter to flag it (flagged letters become orange). Flag letters that should be replaced.</li>
-			<li>Now displays letters other than just single letters and combinations of single letters. You can now see additions like "ls,u"</li>
-			<li>Check frequency of letter + double letter pairs <a href="http://azlen.github.io/perceptual-shift/frequency.html">here</a> (start with the ones with a higher number).<br><i>PS: probably innaccurate, there are definitely bugs in the algorithm, but it's fine for now</i></li>
-			<li>Updates automatically when letters are changed (previously only updated letters added for the first time)</li>
-			<li>Now warns you if you are replacing a letter (unless the letter has been flagged)</li>
-			<li>I've been downloading backups from the server so that if something goes wrong on the server, we cannot lose everything :D</li>
-			<li>Counters so that we can see our progress</li>
+			<li>Gold (hover and press "g"; similarly, flagging is now hover and press "f")</li>
 		</ul>
 	</div>
 	<div>
@@ -248,13 +246,6 @@
 				td.classList.add('dead')
 			}else{
 				td.setAttribute('title', title)
-				td.addEventListener('click', function(){
-					if (td.classList.contains('flagged')) {
-						ref.child('flags/'+title).remove()
-					} else {
-						ref.child('flags/'+title).set(1)
-					}
-				})
 			}
 			var svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
 			svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
@@ -267,6 +258,10 @@
 
 		function updateFlag(snapshot){
 			document.querySelector('*[title="'+snapshot.key()+'"]').classList.toggle('flagged')
+		}
+
+		function updateGold(snapshot){
+			document.querySelector('*[title="'+snapshot.key()+'"]').classList.toggle('gold')
 		}
 
 		for(var r = 0; r < 2; r++){
@@ -344,9 +339,37 @@
 		ref.child('flags').on('child_added', updateFlag)
 		ref.child('flags').on('child_removed', updateFlag)
 
+		ref.child('gold').on('child_added', updateGold)
+		ref.child('gold').on('child_removed', updateGold)
+
 		canvas.addEventListener('mousedown', onMouseDown)
 		window.addEventListener('mousemove', onMouseMove)
 		window.addEventListener('mouseup', onMouseUp)
+		var target;
+		window.addEventListener('mousemove', function(e){
+			target = e.target;
+		})
+		window.addEventListener('keydown', function(e){
+			var t = target.closest('td')
+			console.log(e.keyCode)
+			if(t && t.title != ''){
+				if(e.keyCode == 70){ // f
+					if (t.classList.contains('flagged')) {
+						ref.child('flags/'+t.title).remove()
+					} else {
+						ref.child('flags/'+t.title).set(1)
+					}
+				}else if(e.keyCode == 71){ // g
+					if (t.classList.contains('gold')) {
+						ref.child('gold/'+t.title).remove()
+					} else {
+						ref.child('gold/'+t.title).set(1)
+					}
+				}else if(e.keyCode == 67){ // c
+
+				}
+			}
+		})
 	</script>
 </body>
 </html>
