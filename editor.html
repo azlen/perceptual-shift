@@ -350,7 +350,8 @@
 			target = e.target;
 		})
 		window.addEventListener('keydown', function(e){
-			var t = target.closest('td')
+			var t = target.closest('td,span.done')
+			console.log(t)
 			console.log(e.keyCode)
 			if(t && t.title != ''){
 				if(e.keyCode == 70){ // f
