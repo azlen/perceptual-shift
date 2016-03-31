@@ -5,7 +5,7 @@
 	<script src="paper-full.js"></script>
 	<style>
 		body{
-			width:1600px;
+			width:2000px;
 		}
 		canvas{
 			border:1px solid #999;
@@ -26,11 +26,15 @@
 		table{
 			border:0px solid #999;
 			font-size:10px;
+			border-spacing:0;
 		}
 		td, #table4 span{
 			min-width:20px;
 			min-height:20px;
 			cursor:pointer;
+			border:1px solid #fff;
+			position:relative;
+			vertical-align:top;
 		}
 		#table4{
 			display:block;
@@ -39,7 +43,6 @@
 		}
 		#table4 span{
 			display:inline-block;
-			margin:1px;
 		}
 		#table3{
 			padding-left:14px;
@@ -55,22 +58,60 @@
 		}
 		#table1 td:hover, #table2 td:hover, #table4 span:hover{
 			background:#5bf;
-			outline:2px solid #09e;
+			border:1px solid #09e;
 		}
 		.flagged{
 			background:#f90 !important;
-			outline:1px solid #c70
+			border:1px solid #c70
 		}
 		#table2 td.dead{
 			background:#eee;
 			outline:none;
+			border:1px solid #fff;
 			/*outline:1px solid #f00;*/
 		}
 
 		.gold{
 			background:#ee3 !important;
-			outline:1px solid #bb0
+			border:1px solid #bb0;
+			overflow: hidden;
 		}
+		.gold:after {
+  content: "";
+  position: absolute;
+  top: -110%;
+  left: -210%;
+  width: 200%;
+  height: 200%;
+  opacity: 0;
+  transform: rotate(30deg);
+  
+  /*background: rgba(255, 255, 255, 0.13);*/
+  background: linear-gradient(
+    to right, 
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0) 77%,
+    rgba(255, 255, 255, 0.5) 92%,
+    rgba(255, 255, 255, 0.0) 100%
+  );
+}
+
+/* Hover state - trigger effect */
+
+.gold:hover:after {
+  opacity: 1;
+  top: -30%;
+  left: -30%;
+  transition-property: left, top, opacity;
+  transition-duration: 0.7s, 0.7s, 0.15s;
+  transition-timing-function: ease;
+}
+
+/* Active state */
+
+.gold:active:after {
+  opacity: 0;
+}
 
 		svg{
 			vertical-align:top;
@@ -103,6 +144,7 @@
 		NEW (gold update)
 		<ul>
 			<li>Gold (hover and press "g"; similarly, flagging is now hover and press "f")</li>
+			<li>Gold effects</li>
 		</ul>
 	</div>
 	<div>
