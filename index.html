@@ -66,6 +66,9 @@
 			margin-left:10px;
 			margin-right:10px;
 		}
+		.word{
+			margin:0px 20px;
+		}
 	</style>
 </head>
 <body>
@@ -89,7 +92,7 @@
 		var input2 = document.querySelector('#input2')
 
 		if(window.location.search != ''){
-			l = window.location.search.slice(1, window.location.search.length)
+			l = decodeURI( window.location.search.slice(1, window.location.search.length) )
 			l = l.split(',')
 			input1.value = l[0]
 			input2.value = l[1]
@@ -120,43 +123,59 @@
 			return arr.sort(function(a,b){return alphabet.indexOf(a[0]) > alphabet.indexOf(b[0])}).join(',')
 		}
 
+		function word(v1,v2){
+			var out = document.createElement('span')
+			out.classList.add('word')
+			document.body.appendChild(out)
+
+			var short = [v1, v2][(v1.length > v2.length)+0]
+			var long = [v1, v2][(short != v2)+0]
+			var dist = long.length - short.length
+			for(var i = 0; i < long.length; i++){
+				if(i >= short.length + dist){
+					break;
+				}
+				console.log(v1,v2,v1.length,v2.length,short.length,long.length,long,short)
+				var li = i + long.length - short.length - dist
+				var i1 = short[i]//.replace(',','comma')
+				var i2 = long[li]//.replace(',','comma')
+				if(dist > 0 && data.hasOwnProperty(sort([i1, i2 + long[li + 1]]))){
+					i2 += long[li + 1]
+					dist -= 1
+				}
+				var inp;
+				if(i1 == i2){
+					inp = i1
+				}else{
+					inp = sort([i1,i2])
+				}
+				if(!data.hasOwnProperty(inp)){
+					console.log(inp)
+					inp = 'empty'
+				}
+				//inp = inp.replace(/\./g,'period').replace(/\#/g,'octothorpe').replace(/\$/g,'dollarsign').replace(/\[/g,'leftsquarebracket').replace(/\]/g,'rightsquarebracket');
+				var svg = document.createElementNS("http://www.w3.org/2000/svg", "svg")
+				svg.setAttribute('height', '150px')
+				var path = document.createElementNS("http://www.w3.org/2000/svg","path");
+				svg.appendChild(path)
+				out.appendChild(svg)
+				path.setAttribute('d', data[inp])
+				var bbox = path.getBBox()
+				svg.setAttribute('viewBox', (bbox.x - letterpadding/2)+' 25 '+(bbox.width + letterpadding)+' 150')
+				svg.setAttribute('width', bbox.width+letterpadding)
+			}
+			document.body.removeChild(out)
+			return out
+		}
+
 		function generate(){
 			setTimeout(function(){
-				window.history.replaceState({}, null, window.location.origin + window.location.pathname + '?' + input1.value + ',' + input2.value)
+				window.history.replaceState({}, null, encodeURI( window.location.origin + window.location.pathname + '?' + input1.value + ',' + input2.value ) )
 				output.innerHTML = '';
-				var short = [input1.value, input2.value][(input1.value.length > input2.value.length)+0]
-				var long = [input1.value, input2.value][(short != input2.value)+0]
-				var dist = long.length - short.length
-				for(var i = 0; i < long.length; i++){
-					if(i >= short.length + dist){
-						break;
-					}
-					var li = i + long.length - short.length - dist
-					var i1 = short[i]//.replace(',','comma')
-					var i2 = long[li]//.replace(',','comma')
-					if(dist > 0 && data.hasOwnProperty(sort([i1, i2 + long[li + 1]]))){
-						i2 += long[li + 1]
-						dist -= 1
-					}
-					var inp;
-					if(i1 == i2){
-						inp = i1
-					}else{
-						inp = sort([i1,i2])
-					}
-					if(!data.hasOwnProperty(inp)){
-						inp = 'empty'
-					}
-					//inp = inp.replace(/\./g,'period').replace(/\#/g,'octothorpe').replace(/\$/g,'dollarsign').replace(/\[/g,'leftsquarebracket').replace(/\]/g,'rightsquarebracket');
-					var svg = document.createElementNS("http://www.w3.org/2000/svg", "svg")
-					svg.setAttribute('height', '150px')
-					var path = document.createElementNS("http://www.w3.org/2000/svg","path");
-					svg.appendChild(path)
-					output.appendChild(svg)
-					path.setAttribute('d', data[inp])
-					var bbox = path.getBBox()
-					svg.setAttribute('viewBox', (bbox.x - letterpadding/2)+' 25 '+(bbox.width + letterpadding)+' 150')
-					svg.setAttribute('width', bbox.width+letterpadding)
+				var arr1 = input1.value.split(' ');
+				var arr2 = input2.value.split(' ');
+				for(var i = 0; i < Math.max(arr1.length, arr2.length); i++){
+					output.appendChild(word(arr1[i] || '', arr2[i] || ''))
 				}
 			}, 0)
 		}

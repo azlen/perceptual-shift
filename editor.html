@@ -77,41 +77,33 @@
 			overflow: hidden;
 		}
 		.gold:after {
-  content: "";
-  position: absolute;
-  top: -110%;
-  left: -210%;
-  width: 200%;
-  height: 200%;
-  opacity: 0;
-  transform: rotate(30deg);
-  
-  /*background: rgba(255, 255, 255, 0.13);*/
-  background: linear-gradient(
-    to right, 
-    rgba(255, 255, 255, 0) 0%,
-    rgba(255, 255, 255, 0) 77%,
-    rgba(255, 255, 255, 0.5) 92%,
-    rgba(255, 255, 255, 0.0) 100%
-  );
-}
+			content: "";
+			position: absolute;
+			top: -110%;
+			left: -210%;
+			width: 200%;
+			height: 200%;
+			opacity: 0;
+			transform: rotate(30deg);
 
-/* Hover state - trigger effect */
+			/*background: rgba(255, 255, 255, 0.13);*/
+			background: linear-gradient(
+				to right, 
+				rgba(255, 255, 255, 0) 0%,
+				rgba(255, 255, 255, 0) 77%,
+				rgba(255, 255, 255, 0.5) 92%,
+				rgba(255, 255, 255, 0.0) 100%
+			);
+		}
 
-.gold:hover:after {
-  opacity: 1;
-  top: -30%;
-  left: -30%;
-  transition-property: left, top, opacity;
-  transition-duration: 0.7s, 0.7s, 0.15s;
-  transition-timing-function: ease;
-}
-
-/* Active state */
-
-.gold:active:after {
-  opacity: 0;
-}
+		.gold:hover:after {
+			opacity: 1;
+			top: -30%;
+			left: -30%;
+			transition-property: left, top, opacity;
+			transition-duration: 0.7s, 0.7s, 0.15s;
+			transition-timing-function: ease;
+		}
 
 		svg{
 			vertical-align:top;
@@ -134,17 +126,26 @@
 		<br><br>
 		<button onclick="submit()">submit</button>
 		<br><br>
-		Done (table): <span id="donecounter"></span>
+		Done (table alphabet): <span id="donecounter"></span>
 		<br>
-		Left (table): <span id="leftcounter"></span>
+		Left (table alphabet): <span id="leftcounter"></span>
+		<br>
+		Done (table other): <span id="donecounter2"></span>
+		<br>
+		Left (table other): <span id="leftcounter2"></span>
 		<br><br>
 		Base letters: 52<br>
 		Done (other): <span id="othercounter"></span>
+		<br><br>
+		Done (total): <span id="totalcounter"></span>
 		<br><br>
 		NEW (gold update)
 		<ul>
 			<li>Gold (hover and press "g"; similarly, flagging is now hover and press "f")</li>
 			<li>Gold effects</li>
+			<li>Special alert when replacing gold</li>
+			<li>Numbers now on table</li>
+			<li>More counters</li>
 		</ul>
 	</div>
 	<div>
@@ -180,8 +181,11 @@
 		var table4 = document.querySelector('#table4');
 
 		var donecounter = document.querySelector('#donecounter');
+		var donecounter2 = document.querySelector('#donecounter2');
 		var leftcounter = document.querySelector('#leftcounter');
+		var leftcounter2 = document.querySelector('#leftcounter2');
 		var othercounter = document.querySelector('#othercounter');
+		var totalcounter = document.querySelector('#totalcounter');
 
 		//canvas.width =
 		// Create an empty project and a view for the canvas:
@@ -215,7 +219,7 @@
 		var paths = []
 		var undos = []
 
-		var alphabet = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
+		var alphabet = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890'
 
 		var mousedown = false;
 
@@ -289,6 +293,9 @@
 			}else{
 				td.setAttribute('title', title)
 			}
+			if(c>52){
+				td.classList.add('other')
+			}
 			var svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
 			svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
 			svg.setAttribute('viewBox', '75 25 75 150')
@@ -314,22 +321,21 @@
 			table1.appendChild(tr)
 		}
 
-		for(var r = 0; r < 52; r++){
+		var tr2 = document.createElement('tr');
+		for(var r = 0; r < 62; r++){
 			var tr = document.createElement('tr');
 			tr.textContent = alphabet[r]
-			for(var c = 0; c < 52; c++){
+			for(var c = 0; c < 62; c++){
 				tr.appendChild(createTd(alphabet[r]+', '+alphabet[c], r, c))
 			}
 			table2.appendChild(tr)
-		}
 
-		var tr = document.createElement('tr');
-		for(var c = 0; c < 52; c++){
 			var td = document.createElement('td');
-			td.textContent = alphabet[c]
-			tr.appendChild(td)
+			td.textContent = alphabet[r]
+			tr2.appendChild(td)
 		}
-		table3.appendChild(tr)
+		table3.appendChild(tr2)
+		
 
 		ref.child('data').on('child_added', function(snapshot){
 			var k = snapshot.key().split(',').sort(function(a,b){return alphabet.indexOf(a[0]) > alphabet.indexOf(b[0])})
@@ -345,9 +351,13 @@
 			td.classList.add('done')
 				td.querySelector('svg path').setAttribute('d', snapshot.val())
 
-				donecounter.textContent = table2.querySelectorAll('td.done').length;
-				leftcounter.textContent = table2.querySelectorAll('td:not(.done):not(.dead)').length;
+				donecounter.textContent = table2.querySelectorAll('td.done:not(.other)').length;
+				donecounter2.textContent = table2.querySelectorAll('td.done.other').length;
+				leftcounter.textContent = table2.querySelectorAll('td:not(.done):not(.dead):not(.other)').length;
+				leftcounter2.textContent = table2.querySelectorAll('td.other:not(.done):not(.dead)').length;
 				othercounter.textContent = table4.querySelectorAll('span.done').length;
+
+				totalcounter.textContent = table2.querySelectorAll('td.done').length + table4.querySelectorAll('span.done').length;
 		})
 
 		ref.child('data').on('child_changed', function(snapshot){
@@ -365,7 +375,8 @@
 				var key2 = key.split(',').join(', ')
 				var el = document.querySelector('*[title="'+key2+'"]')
 				if(el && el.classList.contains('done') && !el.classList.contains('flagged')){
-					if(!confirm('Are you sure you want to replace the current "'+key+'"?')){
+					var text = el.classList.contains('gold') ? '(gold alert!) ARE YOU REALLY SURE YOU WANT TO REPLACE THE CURRENT "'+key+'"?!?' : 'Are you sure you want to replace the current "'+key+'"?'
+					if(!confirm(text)){
 						return
 					}
 				}
