@@ -130,10 +130,10 @@
 		<br>
 		Left (table alphabet): <span id="leftcounter"></span>
 		<br>
-		Done (table other): <span id="donecounter2"></span>
+		<!--Done (table other): <span id="donecounter2"></span>
 		<br>
 		Left (table other): <span id="leftcounter2"></span>
-		<br><br>
+		<br>--><br>
 		Base letters: 52<br>
 		Done (other): <span id="othercounter"></span>
 		<br><br>
@@ -144,7 +144,7 @@
 			<li>Gold (hover and press "g"; similarly, flagging is now hover and press "f")</li>
 			<li>Gold effects</li>
 			<li>Special alert when replacing gold</li>
-			<li>Numbers now on table</li>
+			<li><s>Numbers now on table</s></li>
 			<li>More counters</li>
 		</ul>
 	</div>
@@ -183,8 +183,8 @@
 		var donecounter = document.querySelector('#donecounter');
 		var donecounter2 = document.querySelector('#donecounter2');
 		var leftcounter = document.querySelector('#leftcounter');
-		var leftcounter2 = document.querySelector('#leftcounter2');
-		var othercounter = document.querySelector('#othercounter');
+		//var leftcounter2 = document.querySelector('#leftcounter2');
+		//var othercounter = document.querySelector('#othercounter');
 		var totalcounter = document.querySelector('#totalcounter');
 
 		//canvas.width =
@@ -219,7 +219,7 @@
 		var paths = []
 		var undos = []
 
-		var alphabet = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890'
+		var alphabet = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
 
 		var mousedown = false;
 
@@ -322,10 +322,10 @@
 		}
 
 		var tr2 = document.createElement('tr');
-		for(var r = 0; r < 62; r++){
+		for(var r = 0; r < alphabet.length; r++){
 			var tr = document.createElement('tr');
 			tr.textContent = alphabet[r]
-			for(var c = 0; c < 62; c++){
+			for(var c = 0; c < alphabet.length; c++){
 				tr.appendChild(createTd(alphabet[r]+', '+alphabet[c], r, c))
 			}
 			table2.appendChild(tr)
@@ -354,8 +354,8 @@
 				donecounter.textContent = table2.querySelectorAll('td.done:not(.other)').length;
 				donecounter2.textContent = table2.querySelectorAll('td.done.other').length;
 				leftcounter.textContent = table2.querySelectorAll('td:not(.done):not(.dead):not(.other)').length;
-				leftcounter2.textContent = table2.querySelectorAll('td.other:not(.done):not(.dead)').length;
-				othercounter.textContent = table4.querySelectorAll('span.done').length;
+				//leftcounter2.textContent = table2.querySelectorAll('td.other:not(.done):not(.dead)').length;
+				//othercounter.textContent = table4.querySelectorAll('span.done').length;
 
 				totalcounter.textContent = table2.querySelectorAll('td.done').length + table4.querySelectorAll('span.done').length;
 		})
