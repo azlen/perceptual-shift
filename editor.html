@@ -126,9 +126,9 @@
 		<br><br>
 		<button onclick="submit()">submit</button>
 		<br><br>
-		Done (table alphabet): <span id="donecounter"></span>
+		Done (table): <span id="donecounter"></span>
 		<br>
-		Left (table alphabet): <span id="leftcounter"></span>
+		Left (table): <span id="leftcounter"></span>
 		<br>
 		<!--Done (table other): <span id="donecounter2"></span>
 		<br>
@@ -181,10 +181,10 @@
 		var table4 = document.querySelector('#table4');
 
 		var donecounter = document.querySelector('#donecounter');
-		var donecounter2 = document.querySelector('#donecounter2');
+		//var donecounter2 = document.querySelector('#donecounter2');
 		var leftcounter = document.querySelector('#leftcounter');
 		//var leftcounter2 = document.querySelector('#leftcounter2');
-		//var othercounter = document.querySelector('#othercounter');
+		var othercounter = document.querySelector('#othercounter');
 		var totalcounter = document.querySelector('#totalcounter');
 
 		//canvas.width =
@@ -352,10 +352,10 @@
 				td.querySelector('svg path').setAttribute('d', snapshot.val())
 
 				donecounter.textContent = table2.querySelectorAll('td.done:not(.other)').length;
-				donecounter2.textContent = table2.querySelectorAll('td.done.other').length;
+				//donecounter2.textContent = table2.querySelectorAll('td.done.other').length;
 				leftcounter.textContent = table2.querySelectorAll('td:not(.done):not(.dead):not(.other)').length;
 				//leftcounter2.textContent = table2.querySelectorAll('td.other:not(.done):not(.dead)').length;
-				//othercounter.textContent = table4.querySelectorAll('span.done').length;
+				othercounter.textContent = table4.querySelectorAll('span.done').length;
 
 				totalcounter.textContent = table2.querySelectorAll('td.done').length + table4.querySelectorAll('span.done').length;
 		})
