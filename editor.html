@@ -35,6 +35,7 @@
 			border:1px solid #fff;
 			position:relative;
 			vertical-align:top;
+			overflow: hidden;
 		}
 		#table4{
 			display:block;
@@ -74,7 +75,6 @@
 		.gold{
 			background:#ee3 !important;
 			border:1px solid #bb0;
-			overflow: hidden;
 		}
 		.gold:after {
 			content: "";
@@ -103,6 +103,34 @@
 			transition-property: left, top, opacity;
 			transition-duration: 0.7s, 0.7s, 0.15s;
 			transition-timing-function: ease;
+		}
+
+		.comment:hover{
+			overflow:auto;
+		}
+
+		.comment:before{
+			content: "";
+			position: absolute;
+			z-index:666;
+			transform: rotate(45deg);
+			top:-5px;
+			right:-5px;
+			width:10px;
+			height:10px;
+			background-color: #000;
+		}
+		.comment:hover::before{
+			background-color:#eee;
+			transform: rotate(0deg);
+			content: attr(data-comment);
+			width:100px;
+			max-width:200px;
+			height:auto;
+			padding:5px;
+			border:1px solid #000;
+			left:100%;
+			top:-1px;
 		}
 
 		svg{
@@ -146,6 +174,7 @@
 			<li>Special alert when replacing gold</li>
 			<li><s>Numbers now on table</s></li>
 			<li>More counters</li>
+			<li>COMMENTS! You can now comment on things. Except gold, why would you comment on gold anyway? (err... press "c")</li>
 		</ul>
 	</div>
 	<div>
@@ -313,6 +342,11 @@
 			document.querySelector('*[title="'+snapshot.key()+'"]').classList.toggle('gold')
 		}
 
+		function updateComment(snapshot){
+			document.querySelector('*[title="'+snapshot.key()+'"]').classList.toggle('comment')
+			document.querySelector('*[title="'+snapshot.key()+'"]').setAttribute('data-comment', snapshot.val())
+		}
+
 		for(var r = 0; r < 2; r++){
 			var tr = document.createElement('tr');
 			for(var c = 0; c < 26; c++){
@@ -395,6 +429,9 @@
 		ref.child('gold').on('child_added', updateGold)
 		ref.child('gold').on('child_removed', updateGold)
 
+		ref.child('comments').on('child_added', updateComment)
+		ref.child('comments').on('child_removed', updateComment)
+
 		canvas.addEventListener('mousedown', onMouseDown)
 		window.addEventListener('mousemove', onMouseMove)
 		window.addEventListener('mouseup', onMouseUp)
@@ -404,8 +441,6 @@
 		})
 		window.addEventListener('keydown', function(e){
 			var t = target.closest('td,span.done')
-			console.log(t)
-			console.log(e.keyCode)
 			if(t && t.title != ''){
 				if(e.keyCode == 70){ // f
 					if (t.classList.contains('flagged')) {
@@ -420,7 +455,18 @@
 						ref.child('gold/'+t.title).set(1)
 					}
 				}else if(e.keyCode == 67){ // c
-
+					if (t.classList.contains('gold')) {
+						alert("(gold alert!) "+["Are you not utterly speechless in the presence of a gold letter? If you're speechless and at a loss for words, then WHY ART THOU TRYING TO COMMENT ON A GOLD LETTER?", "I'm sorry dave, I'm afraid I can't do that", "You suddenly find yourself at a loss for words.", "Gold speaks for itself.", "With Gold all things are possible -Matthew 19:26", "And Gold said, Let there be light: and there was light."][Math.floor(Math.random()*6)])
+						return
+					}
+					if (t.classList.contains('comment')) {
+						ref.child('comments/'+t.title).remove()
+					} else {
+						var comment = prompt('Type your comment below:')
+						if (comment != null) {
+							ref.child('comments/'+t.title).set(comment)
+						}
+					}
 				}
 			}
 		})
