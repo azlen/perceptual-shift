@@ -113,7 +113,7 @@
 		.comment:before{
 			content: "";
 			position: absolute;
-			z-index:666;
+			z-index:100;
 			transform: rotate(45deg);
 			top:-5px;
 			right:-5px;
@@ -133,6 +133,10 @@
 			left:100%;
 			top:-1px;
 			z-index:66666;
+		}
+
+		.comment.gold:after{
+			display:none;
 		}
 
 		svg{
@@ -176,7 +180,8 @@
 			<li>Special alert when replacing gold</li>
 			<li><s>Numbers now on table</s></li>
 			<li>More counters</li>
-			<li>COMMENTS! You can now comment on things. Except gold, why would you comment on gold anyway? (err... press "c")</li>
+			<li>COMMENTS! You can now comment on things. <s>Except gold, why would you comment on gold anyway?</s> (err... press "c")</li>
+			<li>You can now comment on gold (although it removes the shine effect :P)</li>
 		</ul>
 	</div>
 	<div>
@@ -457,10 +462,10 @@
 						ref.child('gold/'+t.title).set(1)
 					}
 				}else if(e.keyCode == 67){ // c
-					if (t.classList.contains('gold')) {
+					/*if (t.classList.contains('gold')) {
 						alert("(gold alert!) "+["Are you not utterly speechless in the presence of a gold letter? If you're speechless and at a loss for words, then WHY ART THOU TRYING TO COMMENT ON A GOLD LETTER?", "I'm sorry dave, I'm afraid I can't do that", "You suddenly find yourself at a loss for words.", "Gold speaks for itself.", "With Gold all things are possible -Matthew 19:26", "And Gold said, Let there be light: and there was light."][Math.floor(Math.random()*6)])
 						return
-					}
+					}*/
 					if (t.classList.contains('comment')) {
 						ref.child('comments/'+t.title).remove()
 					} else {
