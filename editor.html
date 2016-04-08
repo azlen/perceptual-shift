@@ -151,6 +151,8 @@
 		<button onclick="undo()">undo</button>
 		<button onclick="redo()">redo</button>
 		<button onclick="clr()">clear</button>
+		<br>
+		<button onclick="tandle()">toggle handles</button>
 		<br><br>
 		<canvas id="myCanvas" width="225" height="200"></canvas>
 		<br><br>
@@ -182,6 +184,9 @@
 			<li>More counters</li>
 			<li>COMMENTS! You can now comment on things. <s>Except gold, why would you comment on gold anyway?</s> (err... press "c")</li>
 			<li>You can now comment on gold (although it removes the shine effect :P)</li>
+			<li>You can now edit the paths! (click "toggle handles")</li>
+			<li>You can edit existing letters (click on the letter)</li>
+			<li>Quickly toggle on and off handles by pressing shift</li>
 		</ul>
 	</div>
 	<div>
@@ -255,42 +260,100 @@
 		var paths = []
 		var undos = []
 
+		var on = false;
+		var shift = false;
+		function tandle(){
+			on = !on;
+			for(var i = 0; i < paths.length; i++){
+				paths[i].fullySelected = on;
+			}
+			paper.view.update();
+		}
+
 		var alphabet = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
 
 		var mousedown = false;
+		var handle, hitResult;
 
-		function onMouseDown(event) {
+		paper.settings.handleSize = 5
+
+		function mouseDown(event) {
 			mousedown = true;
+			if(on){
+				handle = null;
+				// Do a hit test on path for handles:
+				hitResult = paper.project.hitTest(event.point, { handles: true, segments:true, tolerance: 3 });
+				if (hitResult) {
+					if (hitResult.type == 'handle-in') {
+						handle = hitResult.segment.handleIn;
+					} else if (hitResult.type == 'handle-out') {
+						handle = hitResult.segment.handleOut;
+					} else if (hitResult.type == 'segment') {
+						handle = hitResult.segment.point;
+					};
+				}
+				console.log(handle)
+			}else{
+				console.log(event)
 
-			// Create a new path and set its stroke color to black:
-			paths.push(new paper.Path({
-				segments: [[event.clientX - canvas.offsetLeft + document.body.scrollLeft, event.clientY - canvas.offsetTop + document.body.scrollTop]],
-				strokeColor: 'black',
-				strokeWidth: 3
-			}));
+				// Create a new path and set its stroke color to black:
+				paths.push(new paper.Path({
+					//segments: [[event.clientX - canvas.offsetLeft + document.body.scrollLeft, event.clientY - canvas.offsetTop + document.body.scrollTop]],
+					segments: [[event.point.x, event.point.y]],
+					strokeColor: 'black',
+					strokeWidth: 3
+				}));
 
-			undos = []
+				undos = []
+			}
+		}
+
+		function direction(p1, p2){
+			return Math.atan2(p2.y - p1.y, p2.x - p1.x)
+		}
+		function distance(p1, p2){
+			return Math.sqrt( (p1.x-p2.x)*(p1.x-p2.x) + (p1.y-p2.y)*(p1.y-p2.y) );
 		}
 
 		// While the user drags the mouse, points are added to the path
 		// at the position of the mouse:
-		function onMouseMove(event) {
-			if (mousedown) {
-				paths[paths.length-1].add([event.clientX - canvas.offsetLeft + document.body.scrollLeft, event.clientY - canvas.offsetTop + document.body.scrollTop]);
+		function mouseMove(event) {
+			if(mousedown){
+				if(on && handle){
+					// If we hit a handle before, move it:
+					if(hitResult.type != 'segment'){
+						var other = [hitResult.segment.handleIn, hitResult.segment.handleOut][(hitResult.type == 'handle-in')+0]
+						var dist = distance({x:0, y:0}, other)
+						handle.x = event.point.x - hitResult.segment.point.x;
+						handle.y = event.point.y - hitResult.segment.point.y;
+						other.x = -Math.cos(direction({x:0, y:0}, handle)) * dist;
+						other.y = -Math.sin(direction({x:0, y:0}, handle)) * dist;
+					}else{
+						handle.x = event.point.x;
+						handle.y = event.point.y;
+					}
+					
+					paper.view.update()
+				}else if(!on && !shift){
+					paths[paths.length-1].add([event.point.x, event.point.y]);
+				}
 			}
 		}
 
 		// When the mouse is released, we simplify the path:
-		function onMouseUp(event) {
-			if (mousedown) {
-				mousedown = false;
-
+		function mouseUp(event) {
+			if (mousedown && !on) {
 				var segmentCount = paths[paths.length-1].segments.length;
 
 				// When the mouse is released, simplify it:
 				paths[paths.length-1].simplify(10);
 			}
+			mousedown = false;
 		}
+
+		paper.view.onMouseDown = mouseDown
+		paper.view.onMouseMove = mouseMove;
+		paper.view.onMouseUp = mouseUp;
 
 		function undo(){
 			if(paths.length > 0){
@@ -328,6 +391,19 @@
 				td.classList.add('dead')
 			}else{
 				td.setAttribute('title', title)
+				td.onclick = function(){
+					if(!confirm('Do you wish to edit "'+this.getAttribute('title')+'"')){
+						return
+					}
+					clr()
+					var path = new paper.CompoundPath(this.querySelector('path').getAttribute('d'));
+					path.strokeColor = "black";
+					path.strokeWidth = 3;
+					paths.push(path);
+					paper.view.update();
+
+					letters.value = this.getAttribute('title').split(' ').join('')
+				}
 			}
 			if(c>52){
 				td.classList.add('other')
@@ -439,9 +515,9 @@
 		ref.child('comments').on('child_added', updateComment)
 		ref.child('comments').on('child_removed', updateComment)
 
-		canvas.addEventListener('mousedown', onMouseDown)
-		window.addEventListener('mousemove', onMouseMove)
-		window.addEventListener('mouseup', onMouseUp)
+		//canvas.addEventListener('mousedown', onMouseDown)
+		//window.addEventListener('mousemove', onMouseMove)
+		//window.addEventListener('mouseup', onMouseUp)
 		var target;
 		window.addEventListener('mousemove', function(e){
 			target = e.target;
@@ -477,6 +553,16 @@
 				}
 			}
 		})
+
+		function shiftwhatever(e){
+			if(e.keyCode == 16){
+				shift = !shift
+				tandle()
+			}
+		}
+
+		window.addEventListener('keydown', shiftwhatever)
+		window.addEventListener('keyup', shiftwhatever)
 	</script>
 </body>
 </html>
