@@ -205,10 +205,13 @@
 		<ul>
 			<li>BIG MAGIC! <span class="sekrit">(try "xyzzy" or konami code)</span></li>
 			<li><span class="sekrit">You can also stack gold and magic to show both effects</span></li>
+			<li><span class="sekrit">Special magic alerts</span></li>
 			<li>You can now edit the paths! (click "toggle handles")</li>
 			<li>You can edit existing letters (click on the letter)</li>
 			<li>Quickly toggle on and off handles by pressing shift</li>
 			<li>Is the letter not on the baseline? don't want to redraw the letter or move every point individually? you can now move the entire drawing (when you are in handle mode) using the arrow keys (left, up, right, down).</li>
+			<li>Gold and flag counters</li>
+			<li><span class="sekrit">Number messages</span></li>
 		</ul>
 	</div>
 	<div>
@@ -228,11 +231,63 @@
 		TODO
 		- zoom so that you can see handles
 		- make algorithm match closest capitalization, and favor golds. Also maybe show all possible combinations.
-		- konami code / xyzzy to toggle magic (purple + white, sparkly, darkens screen on hover?)... Above gold
 		- change log
 		- 
 
 		*/
+
+		var numberMessages = {
+			0: 'zilch',
+			1: 'you gotta start somewhere',
+			4: 'horsemen of the Apocalypse',
+			7: 'lucky',
+			8: 'almost infinity',
+			13: 'unlucky!',
+			16: 'golden!',
+			28: 'perfect!',
+			42: 'the answer',
+			69: 'dirty!',
+			100: 'yay!',
+			123: 'consecutive',
+			161: 'golden!',
+			271: 'e',
+			314: 'PI',
+			365: 'happy birthday!',
+			420: 'blaze it',
+			444: 'angels',
+			496: 'perfect!',
+			555: 'tricked you',
+			628: 'Tau',
+			666: 'evil!',
+			777: 'you win!',
+			786: 'sacred',
+			911: 'emergency',
+			1000: 'W00t!',
+			1010: 'time to get a watch',
+			1100: 'super!',
+			1111: 'make a wish',
+			1138: 'THX',
+			1200: 'amazing!',
+			1234: 'best time ever',
+			1300: 'great!',
+			1337: 'leet',
+			1400: 'nice!',
+			1500: 'almost there!',
+			1600: 'good job',
+			1618: 'golden!',
+			1700: 'getting closer',
+			1800: 'pentagonal pyramidal',
+			1827: 'vampire',
+			1900: 'wowww',
+			1914: 'world at war',
+			2000: 'we did it!',
+			2718: 'e',
+			3141: 'PI',
+			5040: 'Plato',
+			6174: 'we all get here eventually',
+			6283: 'Tau',
+			186282: 'speed of light',
+		}
 
 		var canvas = document.getElementById('myCanvas');
 
@@ -284,6 +339,14 @@
 
 		var paths = []
 		var undos = []
+
+		function randomMessage(l){
+			var m = ''
+			for(var i = 0; i < l; i++){
+				m += String.fromCharCode(Math.floor(Math.random() * 60)+32)
+			}
+			return m
+		}
 
 		var on = false;
 		var shift = false;
@@ -443,19 +506,23 @@
 			return td
 		}
 
+		function nmes(n){
+			return n + ' ' + (numberMessages[n] || '')
+		}
+
 		function updateFlag(snapshot){
 			document.querySelector('*[title="'+snapshot.key()+'"]').classList.toggle('flagged')
-			flagcounter.textContent = document.querySelectorAll('.flagged').length;
+			flagcounter.textContent = nmes(document.querySelectorAll('.flagged').length);
 		}
 
 		function updateGold(snapshot){
 			document.querySelector('*[title="'+snapshot.key()+'"]').classList.toggle('gold')
-			goldcounter.textContent = document.querySelectorAll('.gold').length;
+			goldcounter.textContent = nmes(document.querySelectorAll('.gold').length);
 		}
 
 		function updateMagic(snapshot){
 			document.querySelector('*[title="'+snapshot.key()+'"]').classList.toggle('magic')
-			//magiccounter.textContent = document.querySelectorAll('.magic').length;
+			//magiccounter.textContent = nmes(document.querySelectorAll('.magic').length);
 		}
 
 		function updateComment(snapshot){
@@ -501,13 +568,13 @@
 			td.classList.add('done')
 			td.querySelector('svg path').setAttribute('d', snapshot.val())
 
-			donecounter.textContent = table2.querySelectorAll('td.done:not(.other)').length;
+			donecounter.textContent = nmes(table2.querySelectorAll('td.done:not(.other)').length);
 			//donecounter2.textContent = table2.querySelectorAll('td.done.other').length;
-			leftcounter.textContent = table2.querySelectorAll('td:not(.done):not(.dead):not(.other)').length;
+			leftcounter.textContent = nmes(table2.querySelectorAll('td:not(.done):not(.dead):not(.other)').length);
 			//leftcounter2.textContent = table2.querySelectorAll('td.other:not(.done):not(.dead)').length;
-			othercounter.textContent = table4.querySelectorAll('span.done').length;
+			othercounter.textContent = nmes(table4.querySelectorAll('span.done').length);
 
-			totalcounter.textContent = table2.querySelectorAll('td.done').length + table4.querySelectorAll('span.done').length;
+			totalcounter.textContent = nmes(table2.querySelectorAll('td.done').length + table4.querySelectorAll('span.done').length);
 		})
 
 		ref.child('data').on('child_changed', function(snapshot){
@@ -529,6 +596,7 @@
 				var el = document.querySelector('*[title="'+key2+'"]')
 				if(el && el.classList.contains('done') && !el.classList.contains('flagged')){
 					var text = el.classList.contains('gold') ? '(gold alert!) ARE YOU REALLY SURE YOU WANT TO REPLACE THE CURRENT "'+key+'"?!?' : 'Are you sure you want to replace the current "'+key+'"?'
+					text = el.classList.contains('magic') ? '(magic alert!) '+randomMessage(70)+'?' : text
 					if(!confirm(text)){
 						return
 					}
