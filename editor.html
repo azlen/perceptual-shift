@@ -204,10 +204,11 @@
 		/*
 		
 		TODO
-		- implement flagging in editor
-		- visualize others than just singles
-		- analyze most common combinations needed
-		- create algorithm that is better
+		- zoom so that you can see handles
+		- make algorithm match closest capitalization, and favor golds. Also maybe show all possible combinations.
+		- konami code / xyzzy to toggle magic (purple + white, sparkly, darkens screen on hover?)... Above gold
+		- change log
+		- 
 
 		*/
 
@@ -263,6 +264,7 @@
 		var on = false;
 		var shift = false;
 		function tandle(){
+			if(paths.length == 0){return}
 			on = !on;
 			for(var i = 0; i < paths.length; i++){
 				paths[i].fullySelected = on;
@@ -485,6 +487,9 @@
 		})
 
 		function submit(){
+			if (on){
+				tandle()
+			}
 			if (letters.value != '') {
 				combpath = paths.map(function(p){return p.getPathData()}).join('')
 
