@@ -139,6 +139,27 @@
 			display:none;
 		}
 
+		.magic{
+			background:#90f !important;
+			border:1px solid #70c;
+			transition:all .25s;
+			z-index:42;
+
+		}
+		.magic path{
+			stroke:#fff;
+		}
+		.magic:hover{
+			transform:scale(2);
+			transition:all 1s;
+			box-shadow:0px 0px 50px 20px #000;
+			z-index:420;
+		}
+
+		.sekrit{
+			background-color:#000;
+		}
+
 		svg{
 			vertical-align:top;
 			height:20px;
@@ -170,23 +191,24 @@
 		<br>
 		Left (table other): <span id="leftcounter2"></span>
 		<br>--><br>
-		Base letters: 52<br>
+		Base letters: 52
+		<br>
 		Done (other): <span id="othercounter"></span>
+		<br><br>
+		Gold: <span id="goldcounter"></span>
+		<br>
+		Flagged: <span id="flagcounter"></span>
 		<br><br>
 		Done (total): <span id="totalcounter"></span>
 		<br><br>
-		NEW (gold update)
+		NEW (magic update)
 		<ul>
-			<li>Gold (hover and press "g"; similarly, flagging is now hover and press "f")</li>
-			<li>Gold effects</li>
-			<li>Special alert when replacing gold</li>
-			<li><s>Numbers now on table</s></li>
-			<li>More counters</li>
-			<li>COMMENTS! You can now comment on things. <s>Except gold, why would you comment on gold anyway?</s> (err... press "c")</li>
-			<li>You can now comment on gold (although it removes the shine effect :P)</li>
+			<li>BIG MAGIC! <span class="sekrit">(try "xyzzy" or konami code)</span></li>
+			<li><span class="sekrit">You can also stack gold and magic to show both effects</span></li>
 			<li>You can now edit the paths! (click "toggle handles")</li>
 			<li>You can edit existing letters (click on the letter)</li>
 			<li>Quickly toggle on and off handles by pressing shift</li>
+			<li>Is the letter not on the baseline? don't want to redraw the letter or move every point individually? you can now move the entire drawing (when you are in handle mode) using the arrow keys (left, up, right, down).</li>
 		</ul>
 	</div>
 	<div>
@@ -228,6 +250,8 @@
 		//var leftcounter2 = document.querySelector('#leftcounter2');
 		var othercounter = document.querySelector('#othercounter');
 		var totalcounter = document.querySelector('#totalcounter');
+		var goldcounter = document.querySelector('#goldcounter');
+		var flagcounter	= document.querySelector('#flagcounter');
 
 		//canvas.width =
 		// Create an empty project and a view for the canvas:
@@ -421,10 +445,17 @@
 
 		function updateFlag(snapshot){
 			document.querySelector('*[title="'+snapshot.key()+'"]').classList.toggle('flagged')
+			flagcounter.textContent = document.querySelectorAll('.flagged').length;
 		}
 
 		function updateGold(snapshot){
 			document.querySelector('*[title="'+snapshot.key()+'"]').classList.toggle('gold')
+			goldcounter.textContent = document.querySelectorAll('.gold').length;
+		}
+
+		function updateMagic(snapshot){
+			document.querySelector('*[title="'+snapshot.key()+'"]').classList.toggle('magic')
+			//magiccounter.textContent = document.querySelectorAll('.magic').length;
 		}
 
 		function updateComment(snapshot){
@@ -468,15 +499,15 @@
 				table4.insertBefore(td, table4.children[0])
 			}
 			td.classList.add('done')
-				td.querySelector('svg path').setAttribute('d', snapshot.val())
+			td.querySelector('svg path').setAttribute('d', snapshot.val())
 
-				donecounter.textContent = table2.querySelectorAll('td.done:not(.other)').length;
-				//donecounter2.textContent = table2.querySelectorAll('td.done.other').length;
-				leftcounter.textContent = table2.querySelectorAll('td:not(.done):not(.dead):not(.other)').length;
-				//leftcounter2.textContent = table2.querySelectorAll('td.other:not(.done):not(.dead)').length;
-				othercounter.textContent = table4.querySelectorAll('span.done').length;
+			donecounter.textContent = table2.querySelectorAll('td.done:not(.other)').length;
+			//donecounter2.textContent = table2.querySelectorAll('td.done.other').length;
+			leftcounter.textContent = table2.querySelectorAll('td:not(.done):not(.dead):not(.other)').length;
+			//leftcounter2.textContent = table2.querySelectorAll('td.other:not(.done):not(.dead)').length;
+			othercounter.textContent = table4.querySelectorAll('span.done').length;
 
-				totalcounter.textContent = table2.querySelectorAll('td.done').length + table4.querySelectorAll('span.done').length;
+			totalcounter.textContent = table2.querySelectorAll('td.done').length + table4.querySelectorAll('span.done').length;
 		})
 
 		ref.child('data').on('child_changed', function(snapshot){
@@ -517,6 +548,9 @@
 		ref.child('gold').on('child_added', updateGold)
 		ref.child('gold').on('child_removed', updateGold)
 
+		ref.child('magic').on('child_added', updateMagic)
+		ref.child('magic').on('child_removed', updateMagic)
+
 		ref.child('comments').on('child_added', updateComment)
 		ref.child('comments').on('child_removed', updateComment)
 
@@ -527,40 +561,78 @@
 		window.addEventListener('mousemove', function(e){
 			target = e.target;
 		})
+
+		var keylog = ''
 		window.addEventListener('keydown', function(e){
 			var t = target.closest('td,span.done')
-			if(t && t.title != ''){
-				if(e.keyCode == 70){ // f
-					if (t.classList.contains('flagged')) {
-						ref.child('flags/'+t.title).remove()
-					} else {
-						ref.child('flags/'+t.title).set(1)
-					}
-				}else if(e.keyCode == 71){ // g
-					if (t.classList.contains('gold')) {
-						ref.child('gold/'+t.title).remove()
-					} else {
-						ref.child('gold/'+t.title).set(1)
-					}
-				}else if(e.keyCode == 67){ // c
-					/*if (t.classList.contains('gold')) {
-						alert("(gold alert!) "+["Are you not utterly speechless in the presence of a gold letter? If you're speechless and at a loss for words, then WHY ART THOU TRYING TO COMMENT ON A GOLD LETTER?", "I'm sorry dave, I'm afraid I can't do that", "You suddenly find yourself at a loss for words.", "Gold speaks for itself.", "With Gold all things are possible -Matthew 19:26", "And Gold said, Let there be light: and there was light."][Math.floor(Math.random()*6)])
-						return
-					}*/
-					if (t.classList.contains('comment')) {
-						ref.child('comments/'+t.title).remove()
-					} else {
-						var comment = prompt('Type your comment below:')
-						if (comment != null) {
-							ref.child('comments/'+t.title).set(comment)
+			keylog += String.fromCharCode(e.keyCode)
+			console.log(e.keyCode)
+			if(document.activeElement != letters){
+				if(t && t.title != ''){
+					if(e.keyCode == 70){ // f
+						if (t.classList.contains('flagged')) {
+							ref.child('flags/'+t.title).remove()
+						} else {
+							ref.child('flags/'+t.title).set(1)
+						}
+					}else if(e.keyCode == 71){ // g
+						if (t.classList.contains('gold')) {
+							ref.child('gold/'+t.title).remove()
+						} else {
+							ref.child('gold/'+t.title).set(1)
+						}
+					}else if(e.keyCode == 67){ // c
+						/*if (t.classList.contains('gold')) {
+							alert("(gold alert!) "+["Are you not utterly speechless in the presence of a gold letter? If you're speechless and at a loss for words, then WHY ART THOU TRYING TO COMMENT ON A GOLD LETTER?", "I'm sorry dave, I'm afraid I can't do that", "You suddenly find yourself at a loss for words.", "Gold speaks for itself.", "With Gold all things are possible -Matthew 19:26", "And Gold said, Let there be light: and there was light."][Math.floor(Math.random()*6)])
+							return
+						}*/
+						if (t.classList.contains('comment')) {
+							ref.child('comments/'+t.title).remove()
+						} else {
+							var comment = prompt('Type your comment below:')
+							if (comment != null) {
+								ref.child('comments/'+t.title).set(comment)
+							}
+						}
+					}else if(keylog.indexOf('XYZZY') != -1 || keylog.indexOf("&&((%'%'BA") != -1){
+						keylog = ''
+						if (t.classList.contains('magic')) {
+							ref.child('magic/'+t.title).remove()
+						} else {
+							ref.child('magic/'+t.title).set(1)
 						}
 					}
 				}
+				if(on){
+					var dx = 0, dy = 0;
+					if(e.keyCode == 37){
+						dx = -1
+					}
+					if(e.keyCode == 38){
+						dy = -1
+					}
+					if(e.keyCode == 39){
+						dx = 1
+					}
+					if(e.keyCode == 40){
+						dy = 1
+					}
+					for(var i = 0; i < paths.length; i++){
+						paths[i].position.x += dx
+						paths[i].position.y += dy
+					}
+					if(dx != dy){
+						paper.view.update()
+					}
+				}
+			}
+			if([32,37,38,39,40].indexOf(e.keyCode) != -1){
+				e.preventDefault()
 			}
 		})
 
 		function shiftwhatever(e){
-			if(e.keyCode == 16){
+			if(e.keyCode == 16 && document.activeElement != letters){
 				shift = !shift
 				tandle()
 			}
