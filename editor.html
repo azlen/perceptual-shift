@@ -466,6 +466,9 @@
 		}
 
 		function clr(){
+			if (on){
+				tandle()
+			}
 			paths.forEach(function(p){
 				p.remove()
 			})
@@ -585,9 +588,6 @@
 		})
 
 		function submit(){
-			if (on){
-				tandle()
-			}
 			if (letters.value != '') {
 				combpath = paths.map(function(p){return p.getPathData()}).join('')
 
