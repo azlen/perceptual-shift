@@ -1,4 +1,8 @@
 # Perceptual Shift Ambigrams
+_March 2016_
+
+![Rating](https://img.shields.io/badge/rating-%E2%98%85%E2%98%85%E2%98%85%E2%98%85%E2%98%85-green.svg)
+![Code Status](https://img.shields.io/badge/code-okay-green.svg)
 
 A perceptual shift ambigram is a word that can be read as two (often completely different) words at the same time.
 
