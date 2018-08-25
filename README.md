@@ -1,6 +1,7 @@
 # Perceptual Shift Ambigrams
 _March 2016_
 
+![Code Status](https://img.shields.io/badge/status-firebase%20broken-ff0066.svg)
 ![Rating](https://img.shields.io/badge/rating-%E2%98%85%E2%98%85%E2%98%85%E2%98%85%E2%98%85-green.svg)
 ![Code Status](https://img.shields.io/badge/code-okay-green.svg)
 
